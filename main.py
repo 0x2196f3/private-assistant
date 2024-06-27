@@ -1,0 +1,72 @@
+import asyncio
+import json
+import shutil
+import time
+
+import const
+import home_assistant
+from eff_word_net.audio_processing import Resnet50_Arc_loss
+from eff_word_net.engine import HotwordDetector
+from eff_word_net.streams import SimpleMicStream
+from funasr import FunASR
+from hotword import Listener
+import numpy as np
+
+
+shutil.copyfile("/config/config.py", "/app/config.py")
+import config
+
+asr = None
+async def on_receive(text: str) -> None:
+    global asr
+    home_assistant.call_xiaoai(config.xiaoai_url, config.ha_auth, config.entity_id, text)
+    await asr.stop()
+    asr = None
+
+
+async def on_detect(mic_stream: SimpleMicStream) -> None:
+    global asr
+    asr = FunASR(config.asr_url, on_receive)
+    asr.connect()
+
+    home_assistant.play_text(config.xiaoai_url, config.ha_auth, config.entity_id, "我在")
+
+    mic_stream._out_audio = np.zeros(mic_stream._window_size)
+
+    mic_stream.mic_stream.read(int(const.samplerate * 1))
+
+    message = json.dumps({"mode": "2pass", "chunk_size": [5, 10, 5], "chunk_interval": 10,
+                          "wav_name": "microphone", "is_speaking": True, "hotwords": config.hotwords, "itn": True})
+
+    await asr.send(message)
+
+    chuck_size = const.chuck_size
+
+    for _ in range(int(const.samplerate * 5 / chuck_size)):
+        data = mic_stream.mic_stream.read(chuck_size)
+        if data is None:
+            break
+
+        message = data
+        if asr is None:
+            break
+        await asr.send(message)
+        await asyncio.sleep(0.005)
+
+
+
+
+hw = HotwordDetector(
+    hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
+    reference_file=config.hotword_path,
+    model=Resnet50_Arc_loss(),
+    threshold=0.7,
+    relaxation_time=5
+)
+
+mic_stream = SimpleMicStream()
+
+listener = Listener(hw, mic_stream, on_detect)
+listener.start()
+
+time.sleep(999999999)
