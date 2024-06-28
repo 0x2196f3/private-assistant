@@ -2,9 +2,6 @@ import threading
 from collections import deque
 import pyaudio
 
-import util
-
-
 class MicStream:
     def __init__(self, stream, chuck_size=80, buffer_size=8192):
         self.chunk_size = chuck_size
@@ -38,7 +35,6 @@ class MicStream:
             chunks = []
             while len(chunks) * self.chunk_size < size:
                 chunks.append(self.buffer.popleft())
-            util.print("return " + str(len(chunks)))
             return b''.join(chunks)
 
     def stop_stream(self):
