@@ -50,7 +50,10 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
         message = data
         if asr is None:
             break
-        await asr.send(message)
+        try:
+            await asr.send(message)
+        except Exception as e:
+            print(e)
         await asyncio.sleep(0.005)
 
 
