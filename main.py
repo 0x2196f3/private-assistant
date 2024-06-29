@@ -33,7 +33,7 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
 
     mic_stream._out_audio = np.zeros(mic_stream._window_size)
 
-    mic_stream.mic_stream.read(int(const.samplerate * 1))
+    mic_stream.mic_stream.read(int(const.samplerate * 2))
 
     message = json.dumps({"mode": "2pass", "chunk_size": [5, 10, 5], "chunk_interval": 10,
                           "wav_name": "microphone", "is_speaking": True, "hotwords": config.hotwords, "itn": True})
@@ -42,7 +42,7 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
 
     chuck_size = const.chuck_size
 
-    for _ in range(int(const.samplerate * 5 / chuck_size)):
+    for _ in range(int(const.samplerate * 10 / chuck_size)):
         data = mic_stream.mic_stream.read(chuck_size)
         if data is None:
             break

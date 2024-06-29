@@ -7,6 +7,8 @@ import json
 import numpy as np
 import threading
 
+from eff_word_net import util
+
 
 class FunASR:
     def __init__(self, url: str, on_receive):
@@ -35,7 +37,7 @@ class FunASR:
             ssl_context = ssl.SSLContext()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
-            print(f"connect to {self.url}")
+            util.print("connect to " + self.url)
 
             self.websocket = await websockets.connect(self.url, subprotocols=["binary"], ping_interval=None,
                                                       ssl=ssl_context)
@@ -45,13 +47,13 @@ class FunASR:
                 meg = await self.websocket.recv()
                 meg = json.loads(meg)
                 text = meg["text"]
-                print(meg)
+                util.print(str(meg))
                 if 'mode' not in meg:
                     continue
                 if meg['mode'] == "2pass-offline":
                     await self.on_receive(text)
         except Exception as e:
-            print("Exception:", e)
+            util.print("Exception:" + str(e))
 
     async def stop(self):
         self.stopped = True

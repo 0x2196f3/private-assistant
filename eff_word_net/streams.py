@@ -2,8 +2,8 @@ import pyaudio
 from typing import Tuple, Callable
 import numpy as np
 from eff_word_net.engine import HotwordDetector
-from eff_word_net import RATE
-from eff_word_net.stream_buffer import MicStream
+from eff_word_net import RATE, util
+from eff_word_net.stream_buffer import BufferedStream
 
 NoParameterFunction = Callable[[], None]
 AudioFrameFunction = Callable[[], np.array]
@@ -31,7 +31,7 @@ class CustomAudioStream:
         self._sliding_window_size = int(sliding_window_secs * RATE)
 
         self._out_audio = np.zeros(self._window_size)  #blank 1 sec audio
-        print("Initial S", self._out_audio.shape)
+        # util.print("Initial S" + str(self._out_audio.shape))
 
     def start_stream(self):
         self._out_audio = np.zeros(self._window_size)
@@ -51,7 +51,7 @@ class CustomAudioStream:
 
         new_frame = self._get_next_frame()
 
-        # print("Prior:", self._out_audio.shape, new_frame.shape )
+        # util.print("Prior:"+ str(self._out_audio.shape) + str(new_frame.shape) )
         assert new_frame.shape == (self._sliding_window_size,), \
             "audio frame size from src doesnt match sliding_window_secs"
 
@@ -75,10 +75,10 @@ class SimpleMicStream(CustomAudioStream):
         p = pyaudio.PyAudio()
 
         CHUNK = int(sliding_window_secs * RATE)
-        print("Chunk size", CHUNK)
+        # util.print("Chunk size" + str(CHUNK))
 
-        self.mic_stream = MicStream(p.open(
-            rate=16000,
+        self.mic_stream = BufferedStream(p.open(
+            rate=RATE,
             format=pyaudio.paInt16,
             channels=1,
             input=True,
@@ -92,7 +92,7 @@ class SimpleMicStream(CustomAudioStream):
             open_stream=self.mic_stream.start_stream,
             close_stream=self.mic_stream.stop_stream,
             get_next_frame=lambda: (
-                np.frombuffer(self.mic_stream.read(CHUNK), dtype=np.int16)
+                np.frombuffer(self.mic_stream.read(CHUNK * 2), dtype=np.int16)
             ),
             window_length_secs=window_length_secs,
             sliding_window_secs=sliding_window_secs

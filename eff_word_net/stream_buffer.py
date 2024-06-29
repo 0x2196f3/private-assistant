@@ -1,13 +1,14 @@
 import threading
-from collections import deque
-import pyaudio
 
-class MicStream:
-    def __init__(self, stream, chuck_size=80, buffer_size=8192):
-        self.chunk_size = chuck_size
-        self.buffer_size = buffer_size
+from eff_word_net import util
+
+
+class BufferedStream:
+    def __init__(self, stream, chunk_size: int=1024, max_buffer_size: int=8192 * 16000):
+        self.chunk_size = chunk_size
+        self.max_buffer_size = max_buffer_size
         self.stream = stream
-        self.buffer = deque(maxlen=self.buffer_size)
+        self.buffer = bytearray()
         self.is_stopped = False
         self.lock = threading.Lock()
         self.condition = threading.Condition(self.lock)
@@ -20,22 +21,23 @@ class MicStream:
         while not self.is_stopped:
             chunk = self.stream.read(self.chunk_size, exception_on_overflow=False)
             with self.condition:
-                self.buffer.append(chunk)
+                self.buffer.extend(chunk)
+                if len(self.buffer) > self.max_buffer_size:
+                    self.buffer = self.buffer[-self.max_buffer_size:]
                 self.condition.notify_all()
 
-    def read(self, size):
-        if size % self.chunk_size != 0:
-            raise ValueError("Size must be a multiple of CHUNK_SIZE")
+    def read(self, size: int):
         with self.condition:
-            while len(self.buffer) * self.chunk_size < size and not self.is_stopped:
+            while len(self.buffer) < size and not self.is_stopped:
                 self.condition.wait()
 
             if self.is_stopped:
                 return None
-            chunks = []
-            while len(chunks) * self.chunk_size < size:
-                chunks.append(self.buffer.popleft())
-            return b''.join(chunks)
+            chunk = self.buffer[:size]
+            del self.buffer[:size]
+            # util.print(str(type(chunk)))
+            # util.print(str(len(chunk)))
+            return bytes(chunk)
 
     def stop_stream(self):
         self.is_stopped = True

@@ -82,14 +82,12 @@ class HotwordDetector:
         return (current_time - self.__last_activation_time) > self.relaxation_time
 
     def scoreVector(self, inp_vec: np.array) -> float:
+        current_time = current_time_in_sec()
+        if self.continuous:
+            if (current_time - self.__last_activation_time) < self.relaxation_time:
+                return 0.001
 
         score = self.model.scoreVector(inp_vec, self.embeddings)
-        current_time = current_time_in_sec()
-
-        if self.continuous:
-            if score > self.threshold:
-                if (current_time - self.__last_activation_time) < self.relaxation_time:
-                    return 0.001
 
         if score > self.threshold:
             if self.verbose:
