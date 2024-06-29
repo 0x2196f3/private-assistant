@@ -7,6 +7,7 @@ from pprint import pprint
 import json
 import onnxruntime as rt
 
+from eff_word_net import util
 from eff_word_net.audio_utils import logfbank
 
 LIB_FOLDER_LOCATION = os.path.dirname(os.path.realpath(__file__))
@@ -64,7 +65,7 @@ class ModelRawBackend :
 
 class First_Iteration_Siamese(ModelRawBackend) :
     def __init__(self) :
-        self.window_length = 1.0 # 1 second
+        self.window_length = 1 # 1 second
         self.window_frames = int(self.window_length * 16000)     
         self.logmelcalc_interpreter = tflite.Interpreter(
                 model_path=os.path.join(LIB_FOLDER_LOCATION,"models/first_iteration_siamese/logmelcalc.tflite"
@@ -122,6 +123,8 @@ class First_Iteration_Siamese(ModelRawBackend) :
             1 vector embedding of shape (128,1)
     
         """
+        # util.print(str(inpAudio.shape))
+        # util.print(str(self.window_frames))
         assert(inpAudio.shape==(self.window_frames,))
     
         self.logmelcalc_interpreter.set_tensor(

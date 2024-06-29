@@ -1,6 +1,7 @@
 import asyncio
 import threading
 
+from eff_word_net import util
 from eff_word_net.engine import HotwordDetector
 from eff_word_net.streams import SimpleMicStream
 
@@ -37,6 +38,8 @@ class Listener:
         while True:
             frame = mic_stream.getFrame()
             result = hw.scoreFrame(frame)
+            # util.print(str(result))
+
             if result is None:
                 continue
             if (result["match"]):

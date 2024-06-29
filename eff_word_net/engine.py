@@ -6,7 +6,7 @@ import pyaudio
 from typing import Tuple, List, Union
 
 from eff_word_net.audio_processing import First_Iteration_Siamese, ModelRawBackend, Resnet50_Arc_loss
-from eff_word_net import RATE
+from eff_word_net import RATE, util
 from time import time as current_time_in_sec
 import logging
 
@@ -61,6 +61,8 @@ class HotwordDetector:
         assert self.embeddings.shape[0] > 3, \
             "Minimum of 4 sample datapoints is required"
 
+        # util.print(str(MODEL_TYPE_MAPPER[data["model_type"]]))
+        # util.print(str(type(model)))
         assert MODEL_TYPE_MAPPER[data["model_type"]] == type(model)
         self.model = model
 
@@ -135,11 +137,7 @@ class HotwordDetector:
         #assert inp_audio_frame.shape == (RATE,), \
         #    f"Audio frame needs to be a 1 sec {RATE}Hz sampled vector"
 
-        score = self.scoreVector(
-            self.model.audioToVector(
-                inp_audio_frame
-            )
-        )
+        score = self.scoreVector(self.model.audioToVector(inp_audio_frame))
 
         return {
             "match": score >= self.threshold,
