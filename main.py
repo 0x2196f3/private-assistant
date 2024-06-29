@@ -5,11 +5,11 @@ import time
 
 import const
 import home_assistant
-from eff_word_net.audio_processing import Resnet50_Arc_loss
+from eff_word_net import util
 from eff_word_net.engine import HotwordDetector
 from eff_word_net.streams import SimpleMicStream
 from funasr import FunASR
-from hotword import Listener
+from listener import Listener
 import numpy as np
 
 
@@ -62,8 +62,8 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
 hw = HotwordDetector(
     hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
     reference_file=config.hotword_path,
-    model=Resnet50_Arc_loss(),
-    threshold=0.7,
+    model=util.create_model(config.model),
+    threshold=0.65,
     relaxation_time=5
 )
 
