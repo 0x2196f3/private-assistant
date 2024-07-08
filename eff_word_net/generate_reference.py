@@ -1,6 +1,6 @@
 """
 Can be run directly in cli 
-`funasr -m eff_word_net.generate_reference`
+`python -m eff_word_net.generate_reference`
 """
 import os , glob
 import numpy as np

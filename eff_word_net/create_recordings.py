@@ -20,7 +20,7 @@ def record_audio():
                 frames_per_buffer=CHUNK)
 
     frames = []
-\
+
     for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
         data = inp_stream.read(CHUNK)
         frames.append(data)

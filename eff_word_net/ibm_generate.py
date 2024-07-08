@@ -1,6 +1,6 @@
 """
 Needs to be run directly in cli via
-`funasr -m eff_word_net.ibm_generate`
+`python -m eff_word_net.ibm_generate`
 
 Can be used to artificially synthesize audio samples for a given hotword
 Uses ibm's demo of cloud neural voice , hence try to use it as low as possible
