@@ -12,7 +12,7 @@ from eff_word_net.audio_utils import logfbank
 LIB_FOLDER_LOCATION = os.path.dirname(os.path.realpath(__file__))
 
 class ModelRawBackend :
-    def __init__(self, use_quantized_model=False):
+    def __init__(self, use_quantized_model=True):
         self.use_quantized_model = use_quantized_model
         self.window_length = None
         self.window_frames = None

@@ -38,6 +38,6 @@ threadLooper = ThreadLooper()
 
 def create_model(model_name: str) -> object:
     if model_name in MODEL_TYPE_MAPPER:
-        return MODEL_TYPE_MAPPER[model_name](use_quantized_model=True)
+        return MODEL_TYPE_MAPPER[model_name]()
     else:
         raise ValueError(f"Invalid model name: {model_name}")

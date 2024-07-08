@@ -63,7 +63,7 @@ hw = HotwordDetector(
     hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
     reference_file=config.hotword_path,
     model=util.create_model(config.model),
-    threshold=0.65,
+    threshold=config.threshold,
     relaxation_time=5
 )
 
