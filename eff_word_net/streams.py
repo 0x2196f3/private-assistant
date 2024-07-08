@@ -77,7 +77,7 @@ class SimpleMicStream(CustomAudioStream) :
 
         CHUNK = int(sliding_window_secs*RATE)
         print("Chunk size", CHUNK)
-        mic_stream=BufferedStream(p.open(
+        self.mic_stream=BufferedStream(p.open(
             format=pyaudio.paInt16,
             channels=1,
             rate=16000,
@@ -85,14 +85,14 @@ class SimpleMicStream(CustomAudioStream) :
             frames_per_buffer=CHUNK
         ))
 
-        mic_stream.stop_stream()
+        self.mic_stream.stop_stream()
 
         CustomAudioStream.__init__(
             self,
-            open_stream = mic_stream.start_stream,
-            close_stream = mic_stream.stop_stream,
+            open_stream = self.mic_stream.start_stream,
+            close_stream = self.mic_stream.stop_stream,
             get_next_frame = lambda : (
-                np.frombuffer(mic_stream.read(CHUNK * 2),dtype=np.int16)
+                np.frombuffer(self.mic_stream.read(CHUNK * 2),dtype=np.int16)
                 ),
                  window_length_secs=window_length_secs,
                 sliding_window_secs=sliding_window_secs
