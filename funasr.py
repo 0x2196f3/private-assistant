@@ -34,9 +34,12 @@ class FunASR:
 
     async def _message(self):
         try:
-            ssl_context = ssl.SSLContext()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
+            if self.url.startswith("wss://"):
+                ssl_context = ssl.SSLContext()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+            else:
+                ssl_context = None
             util.print("connect to " + self.url)
 
             self.websocket = await websockets.connect(self.url, subprotocols=["binary"], ping_interval=None,
