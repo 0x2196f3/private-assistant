@@ -21,7 +21,7 @@ def on_receive(text: str) -> None:
     asr.stop()
 
 
-asr: FunASR = FunASR(config.asr_url, on_receive=on_receive)
+asr = FunASR(config.asr_url, on_receive=on_receive)
 
 
 async def on_detect(mic_stream: SimpleMicStream) -> None:
@@ -36,7 +36,7 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
     message = json.dumps({"mode": "2pass", "chunk_size": [5, 10, 5], "chunk_interval": 10,
                           "wav_name": "microphone", "is_speaking": True, "hotwords": config.hotwords, "itn": True})
 
-    await asr.send(message)
+    asr.send(message)
 
     chuck_size = const.chuck_size
 
