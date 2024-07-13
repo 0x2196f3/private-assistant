@@ -1,75 +1,72 @@
-import asyncio
-import random
-
-import websockets
-import ssl
 import json
-import numpy as np
+
+import websocket
 import threading
 
-from eff_word_net import util
+import util
 
 
 class FunASR:
     def __init__(self, url: str, on_receive):
         self.url = url
         self.on_receive = on_receive
-
-        self.websocket = None
-        self.message_task = None
-        self.stopped = False
+        self.ws = None
+        self.stopped = True
+        self.lock = threading.Lock()
+        self.thread = None
 
     def connect(self):
-        self.message_task = threading.Thread(target=self._start_message_thread)
-        self.message_task.start()
+        if self.thread:
+            self.stop()
+        self.thread = threading.Thread(target=self._connect)
+        self.thread.daemon = True
+        self.thread.start()
 
-    def _start_message_thread(self):
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(self._message())
-        loop.close()
-
-    async def send(self, chunk: bytearray):
-        if self.websocket:
-            await self.websocket.send(chunk)
-
-    async def _message(self):
+    def _connect(self):
+        self.stopped = False
+        self.ws = websocket.WebSocketApp(self.url, on_open=self.on_open, on_message=self.on_message,
+                                         on_error=self.on_error, on_close=self.on_close)
         try:
-            util.print("connect to " + self.url)
-
-            if self.url.startswith("wss://"):
-                ssl_context = ssl.SSLContext()
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl.CERT_NONE
-                self.websocket = await websockets.connect(self.url, subprotocols=["binary"], ping_interval=None,
-                                                          ssl=ssl_context)
-            else:
-                self.websocket = await websockets.connect(self.url, subprotocols=["binary"], ping_interval=None,)
-
-
-            while True:
-                if self.stopped:
-                    break
-                meg = await self.websocket.recv()
-                meg = json.loads(meg)
-                text = meg["text"]
-                util.print(str(meg))
-                if 'mode' not in meg:
-                    continue
-                if meg['mode'] == "2pass-offline":
-                    await self.on_receive(text)
+            self.ws.run_forever(reconnect=5)
         except Exception as e:
-            util.print("Exception:" + str(e))
+            print(e)
+        finally:
+            self.stopped = True
+            with self.lock:
+                try:
+                    if self.ws:
+                        self.ws.close()
+                except:
+                    pass
 
-    async def stop(self):
+    def on_open(self, ws):
+        util.print("Opened connection")
+
+    def on_message(self, ws, message):
+        meg = json.loads(message)
+        text = meg["text"]
+        print(str(meg))
+        if 'mode' not in meg:
+            return
+        if meg['mode'] == "2pass-offline":
+            self.on_receive(text)
+
+    def on_error(self, ws, error):
+        util.print(error)
+
+    def on_close(self, ws, close_status_code, close_msg):
+        util.print("### closed ###")
+
+    def send(self, message):
+        with self.lock:
+            if self.ws:
+                self.ws.send(message)
+
+    def stop(self):
         self.stopped = True
-        if self.websocket:
-            await self.websocket.close()
-            self.websocket = None
-
-        if self.message_task:
-            self.message_task.do_run = False
-            try:
-                self.message_task.join()
-            except Exception:
-                pass
-            self.message_task = None
+        with self.lock:
+            if self.ws:
+                self.ws.close()
+        self.thread.join()
+        self.thread = None
+        self.ws = None

@@ -1,7 +1,5 @@
 import threading
 
-from eff_word_net import util
-
 
 class BufferedStream:
     def __init__(self, stream, chunk_size: int=1024, max_buffer_size: int=8192 * 16000):
