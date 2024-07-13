@@ -55,7 +55,7 @@ class FunASR:
     async def sender(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = self.send_queue.get(timeout=1)
+                message = await asyncio.wait_for(self.send_queue.get(), timeout=1)
                 await ws.send(message)
                 self.send_queue.task_done()
             except queue.Empty:
