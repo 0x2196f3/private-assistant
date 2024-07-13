@@ -7,10 +7,10 @@ import asyncio
 import threading
 import queue
 
-
 import asyncio
 import threading
 import queue
+
 
 class FunASR:
     def __init__(self, url, on_receive):
@@ -28,6 +28,9 @@ class FunASR:
         self.stop_event.clear()
         self.thread = threading.Thread(target=self.run_loop)
         self.thread.start()
+
+    def is_stopped(self):
+        return self.thread is None or not self.thread.is_alive()
 
     def stop(self):
         self.stop_event.set()
@@ -75,4 +78,3 @@ class FunASR:
                 continue
             except websockets.ConnectionClosed:
                 break
-
