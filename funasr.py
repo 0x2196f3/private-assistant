@@ -38,7 +38,11 @@ class FunASR:
         if self.thread is None or not self.thread.is_alive():
             util.print("WebSocket is not started")
             return
-        self.loop.call_soon_threadsafe(self.send_queue.put, message)
+        self.loop.create_task(self._send(message))
+
+    async def _send(self, message):
+        await self.send_queue.put(message)
+
 
     def run_loop(self):
         async def loop():
