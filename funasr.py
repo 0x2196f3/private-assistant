@@ -3,9 +3,9 @@ import websockets
 
 import util
 
-
 import asyncio
 import threading
+import queue
 
 
 class FunASR:
@@ -13,20 +13,14 @@ class FunASR:
         self.url = url
         self.on_receive = on_receive
         self.stop_event = threading.Event()
-        self.send_queue = asyncio.Queue()
+        self.send_queue = queue.Queue()
         self.thread = None
         self.ws = None
 
     def start(self):
         if self.thread is not None:
             self.stop()
-
-        while True:
-            try:
-                self.send_queue.get_nowait()
-                self.send_queue.task_done()
-            except asyncio.QueueEmpty:
-                break
+        self.send_queue.queue.clear()
         self.stop_event.clear()
         self.thread = threading.Thread(target=self.run_loop)
         self.thread.start()
@@ -59,7 +53,7 @@ class FunASR:
     async def sender(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await self.send_queue.get()
+                message = self.send_queue.get(timeout=1)
                 await ws.send(message)
                 self.send_queue.task_done()
             except asyncio.TimeoutError:
