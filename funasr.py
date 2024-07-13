@@ -41,9 +41,9 @@ class FunASR:
         self.loop.call_soon_threadsafe(self.send_queue.put, message)
 
     def run_loop(self):
-        self.send_queue = asyncio.Queue()
-
         async def loop():
+            self.send_queue = asyncio.Queue()
+
             async with websockets.connect(self.url) as ws:
                 self.ws = ws
                 sender_task = asyncio.create_task(self.sender(ws))
