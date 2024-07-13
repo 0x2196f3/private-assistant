@@ -50,7 +50,9 @@ class FunASR:
                 receiver_task = asyncio.create_task(self.receiver(ws))
                 await asyncio.gather(sender_task, receiver_task)
 
-        self.loop = asyncio.run(loop())
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(loop())
 
     async def sender(self, ws):
         while not self.stop_event.is_set():
