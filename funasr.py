@@ -56,7 +56,7 @@ class FunASR:
                 message = self.send_queue.get(timeout=1)
                 await ws.send(message)
                 self.send_queue.task_done()
-            except asyncio.TimeoutError:
+            except queue.Empty:
                 continue
 
     async def receiver(self, ws):
