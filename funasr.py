@@ -13,14 +13,14 @@ class FunASR:
         self.url = url
         self.on_receive = on_receive
         self.stop_event = threading.Event()
-        self.send_queue = queue.Queue()
+        self.send_queue = None
         self.thread = None
         self.ws = None
+        self.loop = None
 
     def start(self):
         if self.thread is not None:
             self.stop()
-        self.send_queue.queue.clear()
         self.stop_event.clear()
         self.thread = threading.Thread(target=self.run_loop)
         self.thread.start()
@@ -38,9 +38,11 @@ class FunASR:
         if self.thread is None or not self.thread.is_alive():
             util.print("WebSocket is not started")
             return
-        self.send_queue.put(message)
+        self.loop.call_soon_threadsafe(self.send_queue.put, message)
 
     def run_loop(self):
+        self.send_queue = asyncio.Queue()
+
         async def loop():
             async with websockets.connect(self.url) as ws:
                 self.ws = ws
@@ -48,7 +50,7 @@ class FunASR:
                 receiver_task = asyncio.create_task(self.receiver(ws))
                 await asyncio.gather(sender_task, receiver_task)
 
-        asyncio.run(loop())
+        self.loop = asyncio.run(loop())
 
     async def sender(self, ws):
         while not self.stop_event.is_set():
