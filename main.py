@@ -15,12 +15,13 @@ import numpy as np
 shutil.copyfile("/config/config.py", "/app/config.py")
 import config
 
-asr: FunASR = None
-
 
 def on_receive(text: str) -> None:
     home_assistant.call_xiaoai(config.xiaoai_url, config.ha_auth, config.entity_id, text)
     asr.stop()
+
+
+asr: FunASR = FunASR(config.asr_url, on_receive=on_receive)
 
 
 async def on_detect(mic_stream: SimpleMicStream) -> None:
