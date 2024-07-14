@@ -1,4 +1,6 @@
 import json
+import ssl
+
 import websockets
 
 import util
@@ -45,8 +47,14 @@ class FunASR:
     def run_loop(self):
         async def loop():
             self.send_queue = asyncio.Queue()
+            if self.url.startswith("wss://"):
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+            else:
+                ssl_context = None
 
-            async with websockets.connect(self.url) as ws:
+            async with websockets.connect(self.url, ssl=ssl_context) as ws:
                 sender_task = asyncio.create_task(self.sender(ws))
                 receiver_task = asyncio.create_task(self.receiver(ws))
                 await asyncio.gather(sender_task, receiver_task)
