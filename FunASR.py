@@ -43,6 +43,7 @@ class FunASR:
 
     async def _send(self, message):
         await self.ws.send(message)
+        util.log("send message")
 
     def run_loop(self):
         async def loop():
@@ -55,24 +56,21 @@ class FunASR:
                 ssl_context = None
 
             async with websockets.connect(self.url, ssl=ssl_context) as self.ws:
-                await self.receiver(self.ws)
+                while not self.stop_event.is_set():
+                    try:
+                        message = await self.ws.recv()
+                        meg = json.loads(message)
+                        if 'mode' not in meg:
+                            continue
+                        text = meg["text"]
+                        util.log(str(meg))
+                        if meg['mode'] == "2pass-offline":
+                            self.on_receive(text)
+                    except asyncio.TimeoutError:
+                        continue
+                    except websockets.ConnectionClosed:
+                        break
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(loop())
-
-    async def receiver(self, ws):
-        while not self.stop_event.is_set():
-            try:
-                message = await asyncio.wait_for(ws.recv(), timeout=1)
-                meg = json.loads(message)
-                if 'mode' not in meg:
-                    continue
-                text = meg["text"]
-                util.log(str(meg))
-                if meg['mode'] == "2pass-offline":
-                    self.on_receive(text)
-            except asyncio.TimeoutError:
-                continue
-            except websockets.ConnectionClosed:
-                break
