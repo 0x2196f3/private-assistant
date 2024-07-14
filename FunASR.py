@@ -14,9 +14,9 @@ class FunASR:
         self.url = url
         self.on_receive = on_receive
         self.stop_event = threading.Event()
-        self.send_queue = None
         self.thread = None
         self.loop = None
+        self.ws = None
 
     def start(self):
         if self.thread is not None:
@@ -42,7 +42,7 @@ class FunASR:
         self.loop.create_task(self._send(message))
 
     async def _send(self, message):
-        await self.send_queue.put(message)
+        await self.ws.send(message)
 
     def run_loop(self):
         async def loop():
@@ -54,28 +54,17 @@ class FunASR:
             else:
                 ssl_context = None
 
-            async with websockets.connect(self.url, ssl=ssl_context) as ws:
-                receiver_task = asyncio.create_task(self.receiver(ws))
-                sender_task = asyncio.create_task(self.sender(ws))
-                await asyncio.gather(receiver_task, sender_task)
+            async with websockets.connect(self.url, ssl=ssl_context) as self.ws:
+                await self.receiver(self.ws)
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(loop())
 
-    async def sender(self, ws):
-        while not self.stop_event.is_set():
-            try:
-                message = await asyncio.wait_for(self.send_queue.get(), timeout=0.1)
-                await ws.send(message)
-                self.send_queue.task_done()
-            except asyncio.TimeoutError:
-                continue
-
     async def receiver(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await asyncio.wait_for(ws.recv(), timeout=0.1)
+                message = await asyncio.wait_for(ws.recv(), timeout=1)
                 meg = json.loads(message)
                 if 'mode' not in meg:
                     continue
