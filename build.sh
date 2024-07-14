@@ -1,4 +1,4 @@
-git fetch --all && git reset --hard origin/<branch-name> && git pull
+git fetch --all && git reset --hard origin/main && git pull
 sudo docker build -t private-assistant .
 sudo docker tag private-assistant 0x2196f3/private-assistant:latest
 sudo docker rm -f private-assistant
