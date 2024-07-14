@@ -55,9 +55,9 @@ class FunASR:
                 ssl_context = None
 
             async with websockets.connect(self.url, ssl=ssl_context) as ws:
-                sender_task = asyncio.create_task(self.sender(ws))
                 receiver_task = asyncio.create_task(self.receiver(ws))
-                await asyncio.gather(sender_task, receiver_task)
+                sender_task = asyncio.create_task(self.sender(ws))
+                await asyncio.gather(receiver_task, sender_task)
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
