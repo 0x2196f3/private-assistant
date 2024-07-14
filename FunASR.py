@@ -39,7 +39,7 @@ class FunASR:
         if self.thread is None:
             util.log("WebSocket is not started")
             return
-        self.ws.send(message)
+        await self.ws.send(message)
 
     def run_loop(self):
         async def loop():
