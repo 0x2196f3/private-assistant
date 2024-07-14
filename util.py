@@ -1,10 +1,12 @@
 import datetime
 import sys
+from typing import Any
 
 from eff_word_net.audio_processing import MODEL_TYPE_MAPPER
 
 
-def log(text: str):
+def log(text: Any):
+    text = str(text)
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     sys.stdout.write(f"[{current_time}] {text}\n")
     sys.stdout.flush()

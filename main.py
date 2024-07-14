@@ -25,6 +25,7 @@ def on_detect(mic_stream: SimpleMicStream) -> None:
     asr = FunASR(config.asr_url, on_receive=on_receive)
     asr.start()
     home_assistant.play_text(config.xiaoai_url, config.ha_auth, config.entity_id, "我在")
+    util.log(int(round(time.time() * 1000)))
 
     mic_stream._out_audio = np.zeros(mic_stream._window_size)
 
@@ -60,7 +61,7 @@ hw = HotwordDetector(
     reference_file=config.hotword_path,
     model=util.create_model(config.model),
     threshold=config.threshold,
-    relaxation_time=5
+    relaxation_time=10
 )
 
 mic_stream = SimpleMicStream()

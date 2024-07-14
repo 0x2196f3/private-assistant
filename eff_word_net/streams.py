@@ -22,7 +22,7 @@ class CustomAudioStream :
         close_stream:Callable[[],None],
         get_next_frame:Callable[[],np.array],
         window_length_secs = 1.5,
-        sliding_window_secs:float = 1/8
+        sliding_window_secs:float = 1/2
         ):
 
         self._open_stream = open_stream
