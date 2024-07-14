@@ -19,21 +19,12 @@ class FunASR:
         self.ws = None
 
     def start(self):
-        if self.thread is not None:
-            self.stop()
         self.stop_event.clear()
         self.thread = threading.Thread(target=self.run_loop)
         self.thread.start()
 
     def is_stopped(self):
         return self.thread is None or self.ws is None
-
-    def stop(self):
-        self.stop_event.set()
-        if self.thread is not None:
-            if threading.current_thread() != self.thread:
-                self.thread.join()
-            self.thread = None
 
     async def send(self, message):
         if self.thread is None or self.ws is None:
