@@ -39,7 +39,8 @@ class FunASR:
         if self.thread is None:
             util.log("WebSocket is not started")
             return
-        self.loop.create_task(self._send(message))
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(self._send(message))
 
     async def _send(self, message):
         await self.ws.send(message)
@@ -55,7 +56,7 @@ class FunASR:
             else:
                 ssl_context = None
 
-            async with websockets.connect(self.url, ssl=ssl_context) as self.ws:
+            async with websockets.connect(self.url, ssl=ssl_context, subprotocols=["binary"], ping_interval=None,) as self.ws:
                 while not self.stop_event.is_set():
                     try:
                         message = await self.ws.recv()
