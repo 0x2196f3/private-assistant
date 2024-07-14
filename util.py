@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import queue
 import sys
 import threading
@@ -7,7 +8,8 @@ from eff_word_net.audio_processing import MODEL_TYPE_MAPPER
 
 
 def print(text: str):
-    sys.stdout.write(text + "\n")
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sys.stdout.write(f"[{current_time}] {text}\n")
     sys.stdout.flush()
 
 
