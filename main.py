@@ -51,8 +51,6 @@ def on_detect(mic_stream: SimpleMicStream) -> None:
             asr.send(data)
         except Exception as e:
             print(e)
-        time.sleep(0.005)
-
 
 hw = HotwordDetector(
     hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
