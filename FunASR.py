@@ -66,16 +66,16 @@ class FunASR:
     async def sender(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await self.send_queue.get()
+                message = await asyncio.wait_for(self.send_queue.get(), timeout=0.1)
                 await ws.send(message)
                 self.send_queue.task_done()
-            except:
-                pass
+            except asyncio.TimeoutError:
+                continue
 
     async def receiver(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await ws.recv()
+                message = await asyncio.wait_for(ws.recv(), timeout=0.1)
                 meg = json.loads(message)
                 if 'mode' not in meg:
                     continue
@@ -83,5 +83,7 @@ class FunASR:
                 util.log(str(meg))
                 if meg['mode'] == "2pass-offline":
                     self.on_receive(text)
+            except asyncio.TimeoutError:
+                continue
             except websockets.ConnectionClosed:
                 break
