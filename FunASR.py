@@ -5,7 +5,6 @@ import util
 
 import asyncio
 import threading
-import queue
 
 
 class FunASR:
@@ -15,7 +14,6 @@ class FunASR:
         self.stop_event = threading.Event()
         self.send_queue = None
         self.thread = None
-        self.ws = None
         self.loop = None
 
     def start(self):
@@ -49,7 +47,6 @@ class FunASR:
             self.send_queue = asyncio.Queue()
 
             async with websockets.connect(self.url) as ws:
-                self.ws = ws
                 sender_task = asyncio.create_task(self.sender(ws))
                 receiver_task = asyncio.create_task(self.receiver(ws))
                 await asyncio.gather(sender_task, receiver_task)

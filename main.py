@@ -25,7 +25,7 @@ def on_receive(text: str) -> None:
 asr = FunASR(config.asr_url, on_receive=on_receive)
 
 
-async def on_detect(mic_stream: SimpleMicStream) -> None:
+def on_detect(mic_stream: SimpleMicStream) -> None:
     asr.start()
 
     home_assistant.play_text(config.xiaoai_url, config.ha_auth, config.entity_id, "我在")
@@ -45,11 +45,10 @@ async def on_detect(mic_stream: SimpleMicStream) -> None:
         data = mic_stream.mic_stream.read(chuck_size)
         if data is None:
             break
-        message = data
         if asr.is_stopped():
             break
         try:
-            asr.send(message)
+            asr.send(data)
         except Exception as e:
             print(e)
         time.sleep(0.005)

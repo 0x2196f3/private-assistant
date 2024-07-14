@@ -13,13 +13,8 @@ class Listener:
         self.on_detect = on_detect
 
     def start(self):
-        self.listener_thread = threading.Thread(target=self._start_listening_thread)
+        self.listener_thread = threading.Thread(target=self._start_listening)
         self.listener_thread.start()
-
-    def _start_listening_thread(self):
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(self._start_listening())
-        loop.close()
 
     def stop(self):
         if self.listener_thread:
@@ -30,7 +25,7 @@ class Listener:
                 pass
             self.listener_thread = None
 
-    async def _start_listening(self):
+    def _start_listening(self):
         mic_stream = self.mic_stream
         mic_stream.start_stream()
         hw = self.detector
@@ -42,5 +37,5 @@ class Listener:
             if result is None:
                 continue
             if result["match"]:
-                await self.on_detect(mic_stream)
+                self.on_detect(mic_stream)
 
