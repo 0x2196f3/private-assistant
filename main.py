@@ -19,21 +19,18 @@ import config
 
 def on_receive(text: str) -> None:
     home_assistant.call_xiaoai(config.xiaoai_url, config.ha_auth, config.entity_id, text)
-    looper.send(asr.stop)
-
-
-asr = FunASR(config.asr_url, on_receive=on_receive)
 
 
 def on_detect(mic_stream: SimpleMicStream) -> None:
-    async def _on_detect():
-        asr.start()
+    asr = FunASR(config.asr_url, on_receive=on_receive)
+    asr.start()
+    home_assistant.play_text(config.xiaoai_url, config.ha_auth, config.entity_id, "我在")
 
-        home_assistant.play_text(config.xiaoai_url, config.ha_auth, config.entity_id, "我在")
+    mic_stream._out_audio = np.zeros(mic_stream._window_size)
 
-        mic_stream._out_audio = np.zeros(mic_stream._window_size)
+    mic_stream.mic_stream.read(int(const.samplerate * 2.5))
 
-        mic_stream.mic_stream.read(int(const.samplerate * 2.5))
+    async def do_asr():
 
         message = json.dumps({"mode": "2pass", "chunk_size": [5, 10, 5], "chunk_interval": 10,
                               "wav_name": "microphone", "is_speaking": True, "hotwords": config.hotwords, "itn": True})
@@ -54,8 +51,9 @@ def on_detect(mic_stream: SimpleMicStream) -> None:
                 print(e)
 
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(_on_detect())
+    loop.run_until_complete(do_asr())
     util.log("finish loop")
+
 
 hw = HotwordDetector(
     hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
