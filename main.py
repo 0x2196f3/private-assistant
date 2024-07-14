@@ -55,6 +55,7 @@ def on_detect(mic_stream: SimpleMicStream) -> None:
 
     loop = asyncio.new_event_loop()
     loop.run_until_complete(_on_detect())
+    util.log("finish loop")
 
 hw = HotwordDetector(
     hotword=config.hotword_path[config.hotword_path.rindex("/") + 1:],
