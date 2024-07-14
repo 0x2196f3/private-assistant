@@ -19,7 +19,7 @@ import config
 
 def on_receive(text: str) -> None:
     home_assistant.call_xiaoai(config.xiaoai_url, config.ha_auth, config.entity_id, text)
-    looper.send(asr.stop, None, None)
+    looper.send(asr.stop)
 
 
 asr = FunASR(config.asr_url, on_receive=on_receive)

@@ -17,7 +17,14 @@ class MainThreadLooper:
         while True:
             try:
                 func, args, kwargs = self.queue.get(block=True)
-                func(*args, **kwargs)
+                if args and kwargs:
+                    func(*args, **kwargs)  # Call instance method with self implicit, args, and kwargs
+                elif args and not kwargs:
+                    func(*args)  # Call instance method with self implicit and args
+                elif not args and kwargs:
+                    func(**kwargs)  # Call instance method with self implicit and kwargs
+                else:
+                    func()
             except KeyboardInterrupt:
                 break
 
