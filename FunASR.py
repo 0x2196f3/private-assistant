@@ -40,11 +40,7 @@ class FunASR:
             util.log("WebSocket is not started")
             return
         loop = asyncio.new_event_loop()
-        loop.run_until_complete(self._send(message))
-
-    async def _send(self, message):
-        await self.ws.send(message)
-        util.log("send message")
+        loop.run_until_complete(self.ws.send(message))
 
     def run_loop(self):
         async def loop():
