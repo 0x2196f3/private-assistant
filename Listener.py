@@ -37,8 +37,10 @@ class Listener:
         while True:
             frame = mic_stream.getFrame()
             result = hw.scoreFrame(frame)
+            # util.print(str(result))
+
             if result is None:
                 continue
-            if (result["match"]):
+            if result["match"]:
                 await self.on_detect(mic_stream)
 

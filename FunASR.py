@@ -31,7 +31,8 @@ class FunASR:
     def stop(self):
         self.stop_event.set()
         if self.thread is not None:
-            self.thread.join()
+            if threading.current_thread() != self.thread:
+                self.thread.join()
             self.thread = None
 
     def send(self, message):
@@ -42,7 +43,6 @@ class FunASR:
 
     async def _send(self, message):
         await self.send_queue.put(message)
-
 
     def run_loop(self):
         async def loop():

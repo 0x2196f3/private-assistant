@@ -3,7 +3,7 @@ from typing import Tuple , Callable
 import numpy as np
 from eff_word_net.engine import HotwordDetector
 from eff_word_net import RATE
-from eff_word_net.stream_buffer import BufferedStream
+from eff_word_net.BufferedStream import BufferedStream
 
 NoParameterFunction = Callable[[],None]
 AudioFrameFunction = Callable[[],np.array]

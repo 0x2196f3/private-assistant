@@ -6,10 +6,11 @@ import time
 import const
 import home_assistant
 import util
+from MainThreadLooper import MainThreadLooper
 from eff_word_net.engine import HotwordDetector
 from eff_word_net.streams import SimpleMicStream
-from funasr import FunASR
-from listener import Listener
+from FunASR import FunASR
+from Listener import Listener
 import numpy as np
 
 shutil.copyfile("/config/config.py", "/app/config.py")
@@ -18,7 +19,7 @@ import config
 
 def on_receive(text: str) -> None:
     home_assistant.call_xiaoai(config.xiaoai_url, config.ha_auth, config.entity_id, text)
-    asr.stop()
+    looper.send(asr.stop, None, None)
 
 
 asr = FunASR(config.asr_url, on_receive=on_receive)
@@ -67,4 +68,5 @@ mic_stream = SimpleMicStream()
 listener = Listener(hw, mic_stream, on_detect)
 listener.start()
 
-time.sleep(999999999)
+looper = MainThreadLooper()
+looper.run()
