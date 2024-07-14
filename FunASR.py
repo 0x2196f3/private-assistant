@@ -37,7 +37,7 @@ class FunASR:
 
     def send(self, message):
         if self.thread is None:
-            util.print("WebSocket is not started")
+            util.log("WebSocket is not started")
             return
         self.loop.create_task(self._send(message))
 
@@ -66,24 +66,22 @@ class FunASR:
     async def sender(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await asyncio.wait_for(self.send_queue.get(), timeout=1)
+                message = await self.send_queue.get()
                 await ws.send(message)
                 self.send_queue.task_done()
-            except asyncio.TimeoutError:
-                continue
+            except:
+                pass
 
     async def receiver(self, ws):
         while not self.stop_event.is_set():
             try:
-                message = await asyncio.wait_for(ws.recv(), timeout=1)
+                message = await ws.recv()
                 meg = json.loads(message)
                 if 'mode' not in meg:
                     continue
                 text = meg["text"]
-                util.print(str(meg))
+                util.log(str(meg))
                 if meg['mode'] == "2pass-offline":
                     self.on_receive(text)
-            except asyncio.TimeoutError:
-                continue
             except websockets.ConnectionClosed:
                 break
