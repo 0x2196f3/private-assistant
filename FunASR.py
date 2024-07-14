@@ -26,7 +26,7 @@ class FunASR:
         self.thread.start()
 
     def is_stopped(self):
-        return self.thread is None
+        return self.thread is None or self.ws is None
 
     def stop(self):
         self.stop_event.set()
@@ -36,7 +36,7 @@ class FunASR:
             self.thread = None
 
     async def send(self, message):
-        if self.thread is None or not self.ws.connected:
+        if self.thread is None or self.ws is None:
             util.log("WebSocket is not started")
             return
         await self.ws.send(message)
@@ -68,6 +68,7 @@ class FunASR:
                         continue
                     except websockets.ConnectionClosed:
                         break
+            self.ws = None
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
