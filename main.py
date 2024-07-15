@@ -29,7 +29,7 @@ def on_detect(mic_stream: SimpleMicStream) -> None:
 
     mic_stream._out_audio = np.zeros(mic_stream._window_size)
 
-    mic_stream.mic_stream.read(int(const.samplerate * 4.5))
+    mic_stream.mic_stream.read(int(const.samplerate * 4))
 
     async def do_asr():
 
