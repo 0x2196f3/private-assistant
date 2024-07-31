@@ -22,7 +22,7 @@ class CustomAudioStream :
         close_stream:Callable[[],None],
         get_next_frame:Callable[[],np.array],
         window_length_secs = 1.5,
-        sliding_window_secs:float = 1/2
+        sliding_window_secs:float = 1/4
         ):
 
         self._open_stream = open_stream
@@ -72,7 +72,7 @@ class SimpleMicStream(CustomAudioStream) :
     Implements mic stream with sliding window, 
     implemented by inheriting CustomAudioStream
     """
-    def __init__(self,window_length_secs=1.5, sliding_window_secs:float=1/8):
+    def __init__(self,window_length_secs=1.5, sliding_window_secs:float=1/4):
         p=pyaudio.PyAudio()
 
         CHUNK = int(sliding_window_secs*RATE)
